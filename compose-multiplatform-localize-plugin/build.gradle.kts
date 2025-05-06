@@ -7,15 +7,25 @@ plugins {
     `kotlin-dsl`
 }
 
+// This is critical to fix the language version error
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+        languageVersion = "1.6" // At least 1.6 as required by the error
+        apiVersion = "1.6"
+    }
+}
+
+// Set Java compatibility to match Kotlin
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 // Note: We're using kotlin-dsl plugin which handles Kotlin configuration
 
 group = "com.hyperether"
-version = "1.0.0"
+version = "1.0.1"
 
 
 gradlePlugin {
