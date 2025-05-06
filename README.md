@@ -96,9 +96,9 @@ Use these in your UI:
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.Res
-import com.yourapp.resources.AppLocale
-import com.yourapp.resources.currentLanguage
-import com.yourapp.resources.stringResource
+import com.hyperether.resources.AppLocale
+import com.hyperether.resources.currentLanguage
+import com.hyperether.resources.stringResource
 
 @Composable
 fun WelcomeScreen() {
@@ -121,7 +121,7 @@ For non-composable contexts:
 
 ```kotlin
 import org.jetbrains.compose.resources.Res
-import com.yourapp.resources.stringResourcePlain
+import com.hyperether.resources.stringResourcePlain
 
 fun getTitle(): String {
     return stringResourcePlain(Res.string.app_name)

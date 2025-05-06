@@ -43,7 +43,8 @@ abstract class GenerateTranslationsTask : DefaultTask() {
 
         valuesDirs?.forEach { valueDir ->
             val localeName = valueDir.name.substring("values-".length)
-            val capitalized = localeName.replaceFirstChar { it.uppercase() }
+//            val capitalized = localeName.replaceFirstChar { it.uppercase() }
+            val capitalized = localeName.capitalize()
             locales[capitalized] = File(valueDir, "strings.xml")
         }
 
@@ -121,8 +122,8 @@ $mapEntries
         langCodeMap.add("\"en\"")  // Assuming default is English
 
         locales.filter { it != "Default" }.forEach { locale ->
-            val enumName = locale.uppercase()
-            val langCode = locale.lowercase()
+            val enumName = locale.toUpperCase()
+            val langCode = locale.toLowerCase()
 
             enumEntries.add(enumName)
             langCodeMap.add("\"$langCode\"")
@@ -151,7 +152,7 @@ $mapEntries
         }
 
         val mappingEntries = locales.joinToString(",\n        ") { locale ->
-            val enumName = if (locale == "Default") "DEFAULT" else locale.uppercase()
+            val enumName = if (locale == "Default") "DEFAULT" else locale.toUpperCase()
             "AppLocale.$enumName to Strings$locale.strings"
         }
 
