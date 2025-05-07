@@ -167,8 +167,8 @@ fun getTitle(): String {
 ## Step 6: (Optional) Direct Access to String Maps
 
 ```kotlin
-import com.yourapp.resources.StringsDefault
-import com.yourapp.resources.StringsDe
+import com.hyperether.resources.StringsDefault
+import com.hyperether.resources.StringsDe
 
 val englishWelcome = StringsDefault.strings["welcome_message"]
 val germanWelcome = StringsDe.strings["welcome_message"]
