@@ -90,26 +90,60 @@ The plugin will generate:
 - `AppLocale.kt`
 - `LocalizedStrings.kt` with utility functions
 
-Use these in your UI:
+- Be aware to use `com.hyperether.resources.stringResource` function instead of `org.jetbrains.compose.resources.stringResource`  
+- Same function is made for easier transition from regular compose localization to our plugin.
+- If you add new files clean project so plugin generates new classes
+- Use these in your UI:
 
 ```kotlin
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import org.jetbrains.compose.resources.Res
-import com.hyperether.resources.AppLocale
-import com.hyperether.resources.currentLanguage
-import com.hyperether.resources.stringResource
-
 @Composable
-fun WelcomeScreen() {
-    Text(stringResource(Res.string.welcome_message))
-}
+@Preview
+fun App() {
+    MaterialTheme {
+        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            var appName by remember { mutableStateOf("") }
+            LaunchedEffect(currentLanguage.value) {
+                appName = stringResourcePlain(Res.string.app_name)
+            }
+            Text(appName)
+            Text(stringResource(Res.string.welcome_message))
+            // Change language by setting current language
+            Button(onClick = {
+                currentLanguage.value =
+                    if (currentLanguage.value == AppLocale.DEFAULT) AppLocale.DE else AppLocale.DEFAULT
+            }) {
+                Text("Click me!")
+            }
 
-// To change the language:
-fun changeLanguage() {
-    currentLanguage.value = AppLocale.DE
-    // Or back to default
-    // currentLanguage.value = AppLocale.DEFAULT
+            // List all locales in app
+            Text("All supported locales: ")
+            AppLocale.supportedLocales.forEach {
+                Text("${it.key}, ${it.value}")
+            }
+
+            Spacer(modifier  = Modifier.height(20.dp))
+
+            // Find locale by code
+            Text("Find by code: ")
+            Text("${AppLocale.findByCode("de")}")
+            Text("${AppLocale.findByCode("ll")}")
+
+            Spacer(modifier  = Modifier.height(20.dp))
+
+            // Set locale with code
+            Text("Set locale with code: ")
+            var code by remember { mutableStateOf("") }
+            Row {
+                TextField(code, { code = it })
+                Button(onClick = {
+                    currentLanguage.value = AppLocale.findByCode(code)
+                }) {
+                    Text("Change")
+                }
+            }
+
+        }
+    }
 }
 ```
 

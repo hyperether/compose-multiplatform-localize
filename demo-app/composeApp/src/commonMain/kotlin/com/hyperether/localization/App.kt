@@ -38,6 +38,7 @@ fun App() {
             }
             Text(appName)
             Text(stringResource(Res.string.welcome_message))
+            // Change language by setting current language
             Button(onClick = {
                 currentLanguage.value =
                     if (currentLanguage.value == AppLocale.DEFAULT) AppLocale.DE else AppLocale.DEFAULT
@@ -45,6 +46,7 @@ fun App() {
                 Text("Click me!")
             }
 
+            // List all locales in app
             Text("All supported locales: ")
             AppLocale.supportedLocales.forEach {
                 Text("${it.key}, ${it.value}")
@@ -52,12 +54,14 @@ fun App() {
 
             Spacer(modifier  = Modifier.height(20.dp))
 
+            // Find locale by code
             Text("Find by code: ")
             Text("${AppLocale.findByCode("de")}")
             Text("${AppLocale.findByCode("ll")}")
 
             Spacer(modifier  = Modifier.height(20.dp))
 
+            // Set locale with code
             Text("Set locale with code: ")
             var code by remember { mutableStateOf("") }
             Row {
