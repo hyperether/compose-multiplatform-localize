@@ -43,7 +43,6 @@ abstract class GenerateTranslationsTask : DefaultTask() {
 
         valuesDirs?.forEach { valueDir ->
             val localeName = valueDir.name.substring("values-".length)
-//            val capitalized = localeName.replaceFirstChar { it.uppercase() }
             val capitalized = localeName.capitalize()
             locales[capitalized] = File(valueDir, "strings.xml")
         }
@@ -130,15 +129,44 @@ $mapEntries
         }
 
         val enumContent = """
-            package $packageName
+        package $packageName
+        
+        import java.util.Locale
+        
+        /**
+         * Generated AppLocale enum - represents available locales in the app
+         */
+        enum class AppLocale(val code: String) {
+            ${enumEntries.zip(langCodeMap).joinToString(",\n            ") { (name, code) -> "$name($code)" }};
             
             /**
-             * Generated AppLocale enum - represents available locales in the app
+             * Get the display name for this locale in the current system language
              */
-            enum class AppLocale(val code: String) {
-                ${enumEntries.zip(langCodeMap).joinToString(",\n                ") { (name, code) -> "$name($code)" }}
+            val displayName: String
+                get() = Locale(code).getDisplayLanguage(Locale.getDefault())
+            
+            companion object {
+                /**
+                 * Get all supported locales with their display names
+                 * @return Map of language codes to display names in the current system language
+                 */
+                val supportedLocales: Map<String, String> by lazy {
+                    values().associate { locale ->
+                        locale.code to locale.displayName
+                    }
+                }
+                
+                /**
+                 * Find locale by language code
+                 * @param code The language code to search for
+                 * @return The matching AppLocale or DEFAULT if not found
+                 */
+                fun findByCode(code: String): AppLocale {
+                    return values().find { it.code == code } ?: DEFAULT
+                }
             }
-        """.trimIndent()
+        }
+    """.trimIndent()
 
         File(resourceDir, "AppLocale.kt").writeText(enumContent)
     }
