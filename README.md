@@ -30,7 +30,7 @@ plugins {
     id("org.jetbrains.compose")
 
     // Add the localization plugin
-    id("com.hyperether.localization") version "1.0.0"
+    id("com.hyperether.localization") version "1.2.0"
 }
 
 
