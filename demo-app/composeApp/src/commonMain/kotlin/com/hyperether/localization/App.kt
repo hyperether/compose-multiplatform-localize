@@ -3,9 +3,12 @@ package com.hyperether.localization
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
+import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -39,6 +42,8 @@ fun App() {
             Text(appName)
             Text(stringResource(Res.string.welcome_message))
             // Change language by setting current language
+            Text(currentLanguage.value.displayName)
+            Text(currentLanguage.value.nativeName)
             Button(onClick = {
                 currentLanguage.value =
                     if (currentLanguage.value == AppLocale.DEFAULT) AppLocale.DE else AppLocale.DEFAULT
@@ -48,9 +53,21 @@ fun App() {
 
             // List all locales in app
             Text("All supported locales: ")
-            AppLocale.supportedLocales.forEach {
-                Text("${it.key}, ${it.value}")
+            Row {
+                Column {
+                    AppLocale.supportedLocales.forEach {
+                        Text("${it.key}, ${it.value}")
+                    }
+                }
+                Spacer(modifier = Modifier.width(20.dp))
+                Column {
+                    AppLocale.supportedNativeLocales.forEach {
+                        Text("${it.key}, ${it.value}")
+                    }
+                }
+
             }
+
 
             Spacer(modifier  = Modifier.height(20.dp))
 

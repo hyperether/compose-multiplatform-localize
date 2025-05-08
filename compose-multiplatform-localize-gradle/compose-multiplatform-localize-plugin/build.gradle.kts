@@ -25,7 +25,7 @@ java {
 // Note: We're using kotlin-dsl plugin which handles Kotlin configuration
 
 group = "com.hyperether"
-version = "1.1.0"
+version = "1.1.1"
 
 
 gradlePlugin {
