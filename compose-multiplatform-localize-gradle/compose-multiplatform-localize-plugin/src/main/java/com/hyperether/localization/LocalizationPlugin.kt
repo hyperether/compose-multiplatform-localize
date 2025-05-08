@@ -111,48 +111,104 @@ $mapEntries
     }
 
     /**
-     * Generates an AppLocale enum based on the found locales
+     * Generates an AppLocale enum based on the found locales with predefined display names
      */
     private fun generateAppLocaleEnum(resourceDir: File, locales: List<String>, packageName: String) {
         val enumEntries = mutableListOf<String>()
         val langCodeMap = mutableListOf<String>()
+        val displayNames = mutableListOf<String>()
+        val nativeNames = mutableListOf<String>()
+
+        // Predefined map of language codes to display names (English and native)
+        val languageDisplayNames = mapOf(
+            "en" to Pair("English", "English"),
+            "es" to Pair("Spanish", "Español"),
+            "fr" to Pair("French", "Français"),
+            "de" to Pair("German", "Deutsch"),
+            "it" to Pair("Italian", "Italiano"),
+            "pt" to Pair("Portuguese", "Português"),
+            "ru" to Pair("Russian", "Русский"),
+            "ja" to Pair("Japanese", "日本語"),
+            "ko" to Pair("Korean", "한국어"),
+            "zh" to Pair("Chinese", "中文"),
+            "ar" to Pair("Arabic", "العربية"),
+            "hi" to Pair("Hindi", "हिन्दी"),
+            "tr" to Pair("Turkish", "Türkçe"),
+            "pl" to Pair("Polish", "Polski"),
+            "nl" to Pair("Dutch", "Nederlands"),
+            "sv" to Pair("Swedish", "Svenska"),
+            "da" to Pair("Danish", "Dansk"),
+            "no" to Pair("Norwegian", "Norsk"),
+            "fi" to Pair("Finnish", "Suomi"),
+            "el" to Pair("Greek", "Ελληνικά"),
+            "cs" to Pair("Czech", "Čeština"),
+            "hu" to Pair("Hungarian", "Magyar"),
+            "ro" to Pair("Romanian", "Română"),
+            "uk" to Pair("Ukrainian", "Українська"),
+            "he" to Pair("Hebrew", "עברית"),
+            "th" to Pair("Thai", "ไทย"),
+            "vi" to Pair("Vietnamese", "Tiếng Việt"),
+            "id" to Pair("Indonesian", "Bahasa Indonesia"),
+            "ms" to Pair("Malay", "Bahasa Melayu"),
+            "bg" to Pair("Bulgarian", "Български"),
+            "hr" to Pair("Croatian", "Hrvatski"),
+            "sr" to Pair("Serbian", "Српски"),
+            "sk" to Pair("Slovak", "Slovenčina"),
+            "sl" to Pair("Slovenian", "Slovenščina")
+        )
 
         enumEntries.add("DEFAULT")
         langCodeMap.add("\"en\"")  // Assuming default is English
+        displayNames.add("\"${languageDisplayNames["en"]?.first}\"")
+        nativeNames.add("\"${languageDisplayNames["en"]?.second}\"")
 
         locales.filter { it != "Default" }.forEach { locale ->
             val enumName = locale.toUpperCase()
             val langCode = locale.toLowerCase()
+            val englishName = languageDisplayNames[langCode]?.first ?: locale.capitalize()
+            val nativeName = languageDisplayNames[langCode]?.second ?: locale.capitalize()
 
             enumEntries.add(enumName)
             langCodeMap.add("\"$langCode\"")
+            displayNames.add("\"$englishName\"")
+            nativeNames.add("\"$nativeName\"")
         }
 
         val enumContent = """
         package $packageName
         
-        import java.util.Locale
-        
         /**
          * Generated AppLocale enum - represents available locales in the app
          */
-        enum class AppLocale(val code: String) {
-            ${enumEntries.zip(langCodeMap).joinToString(",\n            ") { (name, code) -> "$name($code)" }};
-            
-            /**
-             * Get the display name for this locale in the current system language
-             */
-            val displayName: String
-                get() = Locale(code).getDisplayLanguage(Locale.getDefault())
+        enum class AppLocale(
+            val code: String, 
+            val displayName: String,
+            val nativeName: String
+        ) {
+            ${enumEntries.zip(langCodeMap.zip(displayNames.zip(nativeNames))).joinToString(",\n            ") { (name, details) ->
+            val (code, names) = details
+            val (display, native) = names
+            "$name($code, $display, $native)"
+        }};
             
             companion object {
                 /**
-                 * Get all supported locales with their display names
-                 * @return Map of language codes to display names in the current system language
+                 * Get all supported locales with their English display names
+                 * @return Map of language codes to English display names
                  */
                 val supportedLocales: Map<String, String> by lazy {
                     values().associate { locale ->
                         locale.code to locale.displayName
+                    }
+                }
+                
+                /**
+                 * Get all supported locales with their native display names
+                 * @return Map of language codes to native display names
+                 */
+                val supportedNativeLocales: Map<String, String> by lazy {
+                    values().associate { locale ->
+                        locale.code to locale.nativeName
                     }
                 }
                 

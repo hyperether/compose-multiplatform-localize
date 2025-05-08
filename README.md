@@ -30,7 +30,7 @@ plugins {
     id("org.jetbrains.compose")
 
     // Add the localization plugin
-    id("com.hyperether.localization") version "1.2.0"
+    id("com.hyperether.localization") version "1.1.1"
 }
 
 
@@ -108,6 +108,8 @@ fun App() {
             Text(appName)
             Text(stringResource(Res.string.welcome_message))
             // Change language by setting current language
+            Text(currentLanguage.value.displayName)
+            Text(currentLanguage.value.nativeName)
             Button(onClick = {
                 currentLanguage.value =
                     if (currentLanguage.value == AppLocale.DEFAULT) AppLocale.DE else AppLocale.DEFAULT
@@ -117,8 +119,19 @@ fun App() {
 
             // List all locales in app
             Text("All supported locales: ")
-            AppLocale.supportedLocales.forEach {
-                Text("${it.key}, ${it.value}")
+            Row {
+                Column {
+                    AppLocale.supportedLocales.forEach {
+                        Text("${it.key}, ${it.value}")
+                    }
+                }
+                Spacer(modifier = Modifier.width(20.dp))
+                Column {
+                    AppLocale.supportedNativeLocales.forEach {
+                        Text("${it.key}, ${it.value}")
+                    }
+                }
+
             }
 
             Spacer(modifier  = Modifier.height(20.dp))
