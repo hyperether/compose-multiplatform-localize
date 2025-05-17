@@ -202,3 +202,8 @@ Run your build and the plugin will:
 ---
 
 🎉 Your app now has a complete localization solution that works with Compose Multiplatform string resources!
+
+## Checkout our IDE plugin for [navigation to strings.xml](https://plugins.jetbrains.com/plugin/27348-resource-locator)
+
+- Plugin that leads developer directly to strings.xml file instead to Res class on command(ctrl)+click.
+- [Repository](https://github.com/hyperether/compose-multiplatform-res-locator)
