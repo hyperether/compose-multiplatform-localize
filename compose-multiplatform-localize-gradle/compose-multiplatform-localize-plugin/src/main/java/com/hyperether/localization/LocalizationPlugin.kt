@@ -43,7 +43,7 @@ abstract class GenerateTranslationsTask : DefaultTask() {
 
         valuesDirs?.forEach { valueDir ->
             val localeName = valueDir.name.substring("values-".length)
-            val capitalized = localeName.capitalize()
+            val capitalized = localeName.capitalize().replace("-", "_")
             locales[capitalized] = File(valueDir, "strings.xml")
         }
 
@@ -163,15 +163,23 @@ $mapEntries
         nativeNames.add("\"${languageDisplayNames["en"]?.second}\"")
 
         locales.filter { it != "Default" }.forEach { locale ->
-            val enumName = locale.toUpperCase()
+            val enumName = locale.toUpperCase().replace("-", "_")
             val langCode = locale.toLowerCase()
             val englishName = languageDisplayNames[langCode]?.first ?: locale.capitalize()
             val nativeName = languageDisplayNames[langCode]?.second ?: locale.capitalize()
 
             enumEntries.add(enumName)
             langCodeMap.add("\"$langCode\"")
-            displayNames.add("\"$englishName\"")
-            nativeNames.add("\"$nativeName\"")
+            if (langCode.contains("_")) {
+                val langCodeParts = langCode.split("_")
+                val englishNameWithCode = languageDisplayNames[langCodeParts[0]]?.first ?: locale.capitalize()
+                val nativeNameWithCode = languageDisplayNames[langCodeParts[0]]?.second ?: locale.capitalize()
+                displayNames.add("\"$englishNameWithCode ($langCode)\"")
+                nativeNames.add("\"$nativeNameWithCode ($langCode)\"")
+            } else {
+                displayNames.add("\"$englishName\"")
+                nativeNames.add("\"$nativeName\"")
+            }
         }
 
         val enumContent = """
