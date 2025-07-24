@@ -2,4 +2,13 @@
 <resources>
     <string name="app_name">Moja Aplikacija</string>
     <string name="welcome_message">Dobrodošli u moju aplikaciju!</string>
+    <string name="greeting">Zdravo, %s!</string>
+    <plurals name="items">
+        <item quantity="one">Jednu stavku</item>
+        <item quantity="other">%d stavki</item>
+    </plurals>
+    <string-array name="colors">
+        <item>Crvena</item>
+        <item>Plava</item>
+    </string-array>
 </resources>

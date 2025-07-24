@@ -2,4 +2,13 @@
 <resources>
     <string name="app_name">Mon Appli</string>
     <string name="welcome_message">Bienvenue dans mon application !</string>
+    <string name="greeting">Bonjour, %s!</string>
+    <plurals name="items">
+        <item quantity="one">Un élément</item>
+        <item quantity="other">%d éléments</item>
+    </plurals>
+    <string-array name="colors">
+        <item>Rouge</item>
+        <item>Bleu</item>
+    </string-array>
 </resources>

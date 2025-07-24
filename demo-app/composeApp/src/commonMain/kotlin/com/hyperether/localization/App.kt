@@ -22,11 +22,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hyperether.resources.AppLocale
+import com.hyperether.resources.LocalizedStrings
 import com.hyperether.resources.currentLanguage
 import com.hyperether.resources.stringResource
-import com.hyperether.resources.stringResourcePlain
+import com.hyperether.resources.pluralStringResource
+import com.hyperether.resources.stringArrayResource
 import composemultiplatformlocalize.composeapp.generated.resources.Res
 import composemultiplatformlocalize.composeapp.generated.resources.app_name
+import composemultiplatformlocalize.composeapp.generated.resources.colors
+import composemultiplatformlocalize.composeapp.generated.resources.greeting
+import composemultiplatformlocalize.composeapp.generated.resources.items
 import composemultiplatformlocalize.composeapp.generated.resources.welcome_message
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -37,10 +42,19 @@ fun App() {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             var appName by remember { mutableStateOf("") }
             LaunchedEffect(currentLanguage.value) {
-                appName = stringResourcePlain(Res.string.app_name)
+                appName = LocalizedStrings.get(Res.string.app_name)
             }
             Text(appName)
             Text(stringResource(Res.string.welcome_message))
+            
+            // String template example
+            Text(stringResource(Res.string.greeting, "John"))
+            
+            // Plurals example  
+            Text(pluralStringResource(Res.plurals.items, 5, 5))
+
+            // Array example
+            Text(stringArrayResource(Res.array.colors)[0])
             // Change language by setting current language
             Text(currentLanguage.value.displayName)
             Text(currentLanguage.value.nativeName)
