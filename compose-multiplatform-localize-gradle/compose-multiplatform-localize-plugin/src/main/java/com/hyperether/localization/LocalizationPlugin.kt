@@ -170,10 +170,14 @@ $mapEntries
 
             enumEntries.add(enumName)
             langCodeMap.add("\"$langCode\"")
-            displayNames.add("\"$englishName\"")
-            if (locale.contains("_")) {
-                nativeNames.add("\"$nativeName\"")
+            if (langCode.contains("_")) {
+                val langCodeParts = langCode.split("_")
+                val englishNameWithCode = languageDisplayNames[langCodeParts[0]]?.first ?: locale.capitalize()
+                val nativeNameWithCode = languageDisplayNames[langCodeParts[0]]?.second ?: locale.capitalize()
+                displayNames.add("\"$englishNameWithCode ($langCode)\"")
+                nativeNames.add("\"$nativeNameWithCode ($langCode)\"")
             } else {
+                displayNames.add("\"$englishName\"")
                 nativeNames.add("\"$nativeName\"")
             }
         }
