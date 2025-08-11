@@ -26,7 +26,7 @@ abstract class GenerateTranslationsTask : DefaultTask() {
     abstract val resourcesDir: Property<String>
 
     @get:Input
-    abstract val projectDir: Property<String>
+    abstract val projectDir: Property<File>
 
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
@@ -329,7 +329,7 @@ class LocalizationPlugin : Plugin<Project> {
                     task.outputPackage.set(extension.outputPackage)
                     task.defaultLocaleName.set(extension.defaultLocaleName)
                     task.resourcesDir.set(extension.resourcesDir)
-                    task.projectDir.set(project.projectDir.absolutePath)
+                    task.projectDir.set(project.projectDir)
 
                     val packagePath = extension.outputPackage.get().replace('.', '/')
                     task.outputDir.set(project.layout.buildDirectory.dir("generated/compose/resourceGenerator/kotlin/commonCustomResClass/$packagePath"))
