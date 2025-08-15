@@ -50,7 +50,7 @@ abstract class GenerateTranslationsTask : DefaultTask() {
             locales[capitalized] = File(valueDir, "strings.xml")
         }
 
-        project.logger.lifecycle("Found locales: ${locales.keys}")
+        logger.lifecycle("Found locales: ${locales.keys}")
 
         val resourceDir = outputDir.get().asFile
         resourceDir.mkdirs()
@@ -61,7 +61,7 @@ abstract class GenerateTranslationsTask : DefaultTask() {
                 val outputFile = File(resourceDir, "Strings$localeName.kt")
                 outputFile.writeText(buildKotlinCode(localeName, translations, outputPackage.get()))
             } else {
-                project.logger.warn("Locale file does not exist: $file")
+                logger.warn("Locale file does not exist: $file")
             }
         }
 
