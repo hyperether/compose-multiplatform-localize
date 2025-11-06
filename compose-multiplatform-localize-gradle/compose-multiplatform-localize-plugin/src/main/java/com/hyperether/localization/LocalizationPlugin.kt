@@ -16,6 +16,151 @@ import org.gradle.api.Action
 import org.gradle.api.Task
 import java.util.regex.Pattern
 
+/**
+ * Pure Kotlin string format function that works across all platforms (Android, iOS, Web, Desktop)
+ * Supports basic format specifiers: %s (string), %d (decimal int), %f (float), %% (percent)
+ * Supports positional arguments like %1$s, %2$d, etc.
+ */
+private fun formatString(template: String, vararg args: Any): String {
+    if (args.isEmpty()) return template
+
+    var result = template
+    val argsList = args.toList()
+
+    // First handle positional arguments (%1$s, %2$d, etc.)
+    val positionalPattern = Regex("""%(\d+)\$([dfsioxXeEfFgGaAcspn])""")
+    result = positionalPattern.replace(result) { matchResult ->
+        val position = matchResult.groupValues[1].toIntOrNull()?.minus(1)
+        val type = matchResult.groupValues[2]
+
+        if (position != null && position in argsList.indices) {
+            formatArgument(argsList[position], type)
+        } else {
+            matchResult.value
+        }
+    }
+
+    // Then handle sequential format specifiers (%s, %d, %f, etc.)
+    var argIndex = 0
+    val sequentialPattern = Regex("""%([dfsioxXeEfFgGaAcspn])""")
+    result = sequentialPattern.replace(result) { matchResult ->
+        if (argIndex < argsList.size) {
+            val formatted = formatArgument(argsList[argIndex], matchResult.groupValues[1])
+            argIndex++
+            formatted
+        } else {
+            matchResult.value
+        }
+    }
+
+    // Handle escaped percent signs
+    result = result.replace("%%", "%")
+
+    return result
+}
+
+/**
+ * Format a single argument based on the format type
+ */
+private fun formatArgument(arg: Any, type: String): String {
+    return when (type.toLowerCase()) {
+        "s" -> arg.toString()
+        "d", "i" -> when (arg) {
+            is Number -> arg.toLong().toString()
+            else -> arg.toString()
+        }
+        "f" -> when (arg) {
+            is Number -> {
+                val doubleValue = arg.toDouble()
+                // Format float with 6 decimal places (default printf behavior)
+                formatFloat(doubleValue, 6)
+            }
+            else -> arg.toString()
+        }
+        "e" -> when (arg) {
+            is Number -> {
+                val doubleValue = arg.toDouble()
+                formatScientific(doubleValue, 6)
+            }
+            else -> arg.toString()
+        }
+        "g" -> when (arg) {
+            is Number -> {
+                val doubleValue = arg.toDouble()
+                // Use shorter of %e or %f
+                val scientific = formatScientific(doubleValue, 6)
+                val fixed = formatFloat(doubleValue, 6)
+                if (scientific.length < fixed.length) scientific else fixed
+            }
+            else -> arg.toString()
+        }
+        "x" -> when (arg) {
+            is Number -> arg.toLong().toString(16)
+            else -> arg.toString()
+        }
+        "o" -> when (arg) {
+            is Number -> arg.toLong().toString(8)
+            else -> arg.toString()
+        }
+        "c" -> when (arg) {
+            is Char -> arg.toString()
+            is Number -> arg.toInt().toChar().toString()
+            else -> arg.toString()
+        }
+        else -> arg.toString()
+    }
+}
+
+/**
+ * Format a float/double with specified decimal places
+ */
+private fun formatFloat(value: Double, decimalPlaces: Int): String {
+    val isNegative = value < 0
+    val absValue = Math.abs(value)
+
+    val integerPart = absValue.toLong()
+    val fractionalPart = absValue - integerPart
+
+    val multiplier = Math.pow(10.0, decimalPlaces.toDouble())
+    val scaledFraction = (fractionalPart * multiplier).toLong()
+
+    val fractionStr = scaledFraction.toString().padStart(decimalPlaces, '0')
+
+    return "${if (isNegative) "-" else ""}$integerPart.$fractionStr"
+}
+
+/**
+ * Format a number in scientific notation
+ */
+private fun formatScientific(value: Double, precision: Int): String {
+    if (value == 0.0) return "0.000000e+00"
+
+    val isNegative = value < 0
+    val absValue = Math.abs(value)
+
+    var exponent = 0
+    var mantissa = absValue
+
+    // Normalize mantissa to be between 1 and 10
+    if (mantissa >= 10) {
+        while (mantissa >= 10) {
+            mantissa /= 10
+            exponent++
+        }
+    } else if (mantissa < 1) {
+        while (mantissa < 1) {
+            mantissa *= 10
+            exponent--
+        }
+    }
+
+    val mantissaStr = formatFloat(mantissa, precision)
+    val expSign = if (exponent >= 0) "+" else ""
+    val expStr = Math.abs(exponent).toString().padStart(2, '0')
+
+    return "${if (isNegative) "-" else ""}${mantissaStr}e$expSign$expStr"
+}
+
 sealed class StringResource {
     data class SimpleString(val key: String, val value: String) : StringResource()
     data class FormattedString(val key: String, val value: String, val formatArgs: List<String>) : StringResource()
@@ -407,21 +552,168 @@ $arrayMapEntries
 
         val localizedStringsContent = """
             package $packageName
-            
+
             import androidx.compose.runtime.Composable
             import androidx.compose.runtime.mutableStateOf
             import androidx.compose.runtime.getValue
             import org.jetbrains.compose.resources.StringResource
-            import org.jetbrains.compose.resources.PluralStringResource  
+            import org.jetbrains.compose.resources.PluralStringResource
             import org.jetbrains.compose.resources.StringArrayResource
-            
+            import kotlin.math.abs
+            import kotlin.math.pow
+
             $importStatements
-            
+
+            /**
+             * Pure Kotlin string format function that works across all platforms (Android, iOS, Web, Desktop)
+             * Supports basic format specifiers: %s (string), %d (decimal int), %f (float), %% (percent)
+             * Supports positional arguments like %1${'$'}s, %2${'$'}d, etc.
+             */
+            private fun formatString(template: String, vararg args: Any): String {
+                if (args.isEmpty()) return template
+
+                var result = template
+                val argsList = args.toList()
+
+                // First handle positional arguments (%1${'$'}s, %2${'$'}d, etc.)
+                val positionalPattern = Regex("%(\\d+)\\${'$'}([dfsioxXeEfFgGaAcspn])")
+                result = positionalPattern.replace(result) { matchResult ->
+                    val position = matchResult.groupValues[1].toIntOrNull()?.minus(1)
+                    val type = matchResult.groupValues[2]
+
+                    if (position != null && position in argsList.indices) {
+                        formatArgument(argsList[position], type)
+                    } else {
+                        matchResult.value
+                    }
+                }
+
+                // Then handle sequential format specifiers (%s, %d, %f, etc.)
+                var argIndex = 0
+                val sequentialPattern = Regex("%([dfsioxXeEfFgGaAcspn])")
+                result = sequentialPattern.replace(result) { matchResult ->
+                    if (argIndex < argsList.size) {
+                        val formatted = formatArgument(argsList[argIndex], matchResult.groupValues[1])
+                        argIndex++
+                        formatted
+                    } else {
+                        matchResult.value
+                    }
+                }
+
+                // Handle escaped percent signs
+                result = result.replace("%%", "%")
+
+                return result
+            }
+
+            /**
+             * Format a single argument based on the format type
+             */
+            private fun formatArgument(arg: Any, type: String): String {
+                return when (type.lowercase()) {
+                    "s" -> arg.toString()
+                    "d", "i" -> when (arg) {
+                        is Number -> arg.toLong().toString()
+                        else -> arg.toString()
+                    }
+                    "f" -> when (arg) {
+                        is Number -> {
+                            val doubleValue = arg.toDouble()
+                            // Format float with 6 decimal places (default printf behavior)
+                            formatFloat(doubleValue, 6)
+                        }
+                        else -> arg.toString()
+                    }
+                    "e" -> when (arg) {
+                        is Number -> {
+                            val doubleValue = arg.toDouble()
+                            formatScientific(doubleValue, 6)
+                        }
+                        else -> arg.toString()
+                    }
+                    "g" -> when (arg) {
+                        is Number -> {
+                            val doubleValue = arg.toDouble()
+                            // Use shorter of %e or %f
+                            val scientific = formatScientific(doubleValue, 6)
+                            val fixed = formatFloat(doubleValue, 6)
+                            if (scientific.length < fixed.length) scientific else fixed
+                        }
+                        else -> arg.toString()
+                    }
+                    "x" -> when (arg) {
+                        is Number -> arg.toLong().toString(16)
+                        else -> arg.toString()
+                    }
+                    "o" -> when (arg) {
+                        is Number -> arg.toLong().toString(8)
+                        else -> arg.toString()
+                    }
+                    "c" -> when (arg) {
+                        is Char -> arg.toString()
+                        is Number -> arg.toInt().toChar().toString()
+                        else -> arg.toString()
+                    }
+                    else -> arg.toString()
+                }
+            }
+
+            /**
+             * Format a float/double with specified decimal places
+             */
+            private fun formatFloat(value: Double, decimalPlaces: Int): String {
+                val isNegative = value < 0
+                val absValue = abs(value)
+
+                val integerPart = absValue.toLong()
+                val fractionalPart = absValue - integerPart
+
+                val multiplier = 10.0.pow(decimalPlaces)
+                val scaledFraction = (fractionalPart * multiplier).toLong()
+
+                val fractionStr = scaledFraction.toString().padStart(decimalPlaces, '0')
+
+                return "${'$'}{if (isNegative) "-" else ""}${'$'}integerPart.${'$'}fractionStr"
+            }
+
+            /**
+             * Format a number in scientific notation
+             */
+            private fun formatScientific(value: Double, precision: Int): String {
+                if (value == 0.0) return "0.000000e+00"
+
+                val isNegative = value < 0
+                val absValue = abs(value)
+
+                var exponent = 0
+                var mantissa = absValue
+
+                // Normalize mantissa to be between 1 and 10
+                if (mantissa >= 10) {
+                    while (mantissa >= 10) {
+                        mantissa /= 10
+                        exponent++
+                    }
+                } else if (mantissa < 1) {
+                    while (mantissa < 1) {
+                        mantissa *= 10
+                        exponent--
+                    }
+                }
+
+                val mantissaStr = formatFloat(mantissa, precision)
+                val expSign = if (exponent >= 0) "+" else ""
+                val expStr = abs(exponent).toString().padStart(2, '0')
+
+                return "${'$'}{if (isNegative) "-" else ""}${'$'}{mantissaStr}e${'$'}expSign${'$'}expStr"
+            }
+
             /**
              * Current language state for the application
              */
             val currentLanguage = mutableStateOf(AppLocale.DEFAULT)
-            
+
             /**
              * Generated LocalizedStrings utility class with Android string features support
              */
@@ -463,7 +755,7 @@ $arrayMapEntries
                     val formattedString = formattedStrings[locale]?.get(key) ?: formattedStrings[AppLocale.DEFAULT]?.get(key)
                     return if (formattedString != null) {
                         try {
-                            String.format(formattedString.template, *args)
+                            formatString(formattedString.template, *args)
                         } catch (e: Exception) {
                             formattedString.template
                         }
@@ -495,7 +787,7 @@ $arrayMapEntries
                         val template = pluralMap[quantityKey] ?: pluralMap["other"] ?: "???"
                         if (formatArgs.isNotEmpty()) {
                             try {
-                                String.format(template, *formatArgs)
+                                formatString(template, *formatArgs)
                             } catch (e: Exception) {
                                 template
                             }
