@@ -299,10 +299,13 @@ abstract class GenerateTranslationsTask : DefaultTask() {
     }
     
     private fun extractFormatArgs(value: String): List<String> {
-        val formatPattern = Pattern.compile("%(\\d+\\$)?[dioxXeEfFgGaAcspn%]")
+        // Match format specifiers with optional position, flags, width, precision
+        // Pattern: %[position$][flags][width][.precision]type
+        // Example: %1$s, %d, %.2f, %10.5f, etc.
+        val formatPattern = Pattern.compile("%(\\d+\\$)?[-#+ 0,(]*\\d*(\\.\\d+)?[dioxXeEfFgGaAcspn%]")
         val matcher = formatPattern.matcher(value)
         val args = mutableListOf<String>()
-        
+
         while (matcher.find()) {
             val arg = matcher.group()
             if (!args.contains(arg) && arg != "%%") {
@@ -321,29 +324,49 @@ abstract class GenerateTranslationsTask : DefaultTask() {
         resources.forEach { resource ->
             when (resource) {
                 is StringResource.SimpleString -> {
-                    val escapedValue = resource.value.replace("\"", "\\\"")
+                    val escapedValue = resource.value
+                        .replace("\\", "\\\\")  // Escape backslashes first
+                        .replace("$", "\\$")     // Escape dollar signs for Kotlin string interpolation
+                        .replace("\"", "\\\"")   // Escape quotes
                     // Check if it contains format specifiers and should be treated as formatted
                     val formatArgs = extractFormatArgs(resource.value)
                     if (formatArgs.isNotEmpty()) {
-                        formattedStrings.add("""    "${resource.key}" to FormattedString("$escapedValue", listOf(${formatArgs.joinToString(", ") { "\"$it\"" }}))""")
+                        val escapedArgs = formatArgs.joinToString(", ") { arg ->
+                            val escaped = arg.replace("$", "\\$")
+                            "\"$escaped\""
+                        }
+                        formattedStrings.add("""    "${resource.key}" to FormattedString("$escapedValue", listOf($escapedArgs))""")
                     } else {
                         simpleStrings.add("""    "${resource.key}" to "$escapedValue"""")
                     }
                 }
                 is StringResource.FormattedString -> {
-                    val escapedValue = resource.value.replace("\"", "\\\"")
-                    formattedStrings.add("""    "${resource.key}" to FormattedString("$escapedValue", listOf(${resource.formatArgs.joinToString(", ") { "\"$it\"" }}))""")
+                    val escapedValue = resource.value
+                        .replace("\\", "\\\\")  // Escape backslashes first
+                        .replace("$", "\\$")     // Escape dollar signs for Kotlin string interpolation
+                        .replace("\"", "\\\"")   // Escape quotes
+                    val escapedArgs = resource.formatArgs.joinToString(", ") { arg ->
+                        val escaped = arg.replace("$", "\\$")
+                        "\"$escaped\""
+                    }
+                    formattedStrings.add("""    "${resource.key}" to FormattedString("$escapedValue", listOf($escapedArgs))""")
                 }
                 is StringResource.PluralString -> {
                     val items = resource.items.entries.joinToString(", ") { (quantity, value) ->
-                        val escapedValue = value.replace("\"", "\\\"")
+                        val escapedValue = value
+                            .replace("\\", "\\\\")  // Escape backslashes first
+                            .replace("$", "\\$")     // Escape dollar signs for Kotlin string interpolation
+                            .replace("\"", "\\\"")   // Escape quotes
                         """"$quantity" to "$escapedValue""""
                     }
                     pluralStrings.add("""    "${resource.key}" to mapOf($items)""")
                 }
                 is StringResource.StringArray -> {
                     val items = resource.items.joinToString(", ") { value ->
-                        val escapedValue = value.replace("\"", "\\\"")
+                        val escapedValue = value
+                            .replace("\\", "\\\\")  // Escape backslashes first
+                            .replace("$", "\\$")     // Escape dollar signs for Kotlin string interpolation
+                            .replace("\"", "\\\"")   // Escape quotes
                         """"$escapedValue""""
                     }
                     stringArrays.add("""    "${resource.key}" to listOf($items)""")
@@ -566,8 +589,9 @@ $arrayMapEntries
 
             /**
              * Pure Kotlin string format function that works across all platforms (Android, iOS, Web, Desktop)
-             * Supports basic format specifiers: %s (string), %d (decimal int), %f (float), %% (percent)
-             * Supports positional arguments like %1${'$'}s, %2${'$'}d, etc.
+             * Supports format specifiers: %s, %d, %f, %.2f, %1${'$'}s, etc.
+             * Supports positional arguments like %1${'$'}s, %2${'$'}d
+             * Supports precision modifiers like %.2f, %.6f
              */
             private fun formatString(template: String, vararg args: Any): String {
                 if (args.isEmpty()) return template
@@ -575,25 +599,28 @@ $arrayMapEntries
                 var result = template
                 val argsList = args.toList()
 
-                // First handle positional arguments (%1${'$'}s, %2${'$'}d, etc.)
-                val positionalPattern = Regex("%(\\d+)\\${'$'}([dfsioxXeEfFgGaAcspn])")
+                // First handle positional arguments with optional precision (%1${'$'}s, %1${'$'}.2f, etc.)
+                val positionalPattern = Regex("%(\\d+)\\${'$'}([-#+ 0,(]*)\\d*(\\.\\d+)?([dfsioxXeEfFgGaAcspn])")
                 result = positionalPattern.replace(result) { matchResult ->
                     val position = matchResult.groupValues[1].toIntOrNull()?.minus(1)
-                    val type = matchResult.groupValues[2]
+                    val precision = matchResult.groupValues[3].removePrefix(".")
+                    val type = matchResult.groupValues[4]
 
                     if (position != null && position in argsList.indices) {
-                        formatArgument(argsList[position], type)
+                        formatArgument(argsList[position], type, precision)
                     } else {
                         matchResult.value
                     }
                 }
 
-                // Then handle sequential format specifiers (%s, %d, %f, etc.)
+                // Then handle sequential format specifiers with optional precision (%s, %d, %.2f, etc.)
                 var argIndex = 0
-                val sequentialPattern = Regex("%([dfsioxXeEfFgGaAcspn])")
+                val sequentialPattern = Regex("%([-#+ 0,(]*)\\d*(\\.\\d+)?([dfsioxXeEfFgGaAcspn])")
                 result = sequentialPattern.replace(result) { matchResult ->
                     if (argIndex < argsList.size) {
-                        val formatted = formatArgument(argsList[argIndex], matchResult.groupValues[1])
+                        val precision = matchResult.groupValues[2].removePrefix(".")
+                        val type = matchResult.groupValues[3]
+                        val formatted = formatArgument(argsList[argIndex], type, precision)
                         argIndex++
                         formatted
                     } else {
@@ -608,9 +635,11 @@ $arrayMapEntries
             }
 
             /**
-             * Format a single argument based on the format type
+             * Format a single argument based on the format type and optional precision
              */
-            private fun formatArgument(arg: Any, type: String): String {
+            private fun formatArgument(arg: Any, type: String, precision: String = ""): String {
+                val precisionValue = precision.toIntOrNull() ?: 6 // Default to 6 if not specified
+
                 return when (type.lowercase()) {
                     "s" -> arg.toString()
                     "d", "i" -> when (arg) {
@@ -620,15 +649,14 @@ $arrayMapEntries
                     "f" -> when (arg) {
                         is Number -> {
                             val doubleValue = arg.toDouble()
-                            // Format float with 6 decimal places (default printf behavior)
-                            formatFloat(doubleValue, 6)
+                            formatFloat(doubleValue, precisionValue)
                         }
                         else -> arg.toString()
                     }
                     "e" -> when (arg) {
                         is Number -> {
                             val doubleValue = arg.toDouble()
-                            formatScientific(doubleValue, 6)
+                            formatScientific(doubleValue, precisionValue)
                         }
                         else -> arg.toString()
                     }
@@ -636,8 +664,8 @@ $arrayMapEntries
                         is Number -> {
                             val doubleValue = arg.toDouble()
                             // Use shorter of %e or %f
-                            val scientific = formatScientific(doubleValue, 6)
-                            val fixed = formatFloat(doubleValue, 6)
+                            val scientific = formatScientific(doubleValue, precisionValue)
+                            val fixed = formatFloat(doubleValue, precisionValue)
                             if (scientific.length < fixed.length) scientific else fixed
                         }
                         else -> arg.toString()

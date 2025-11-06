@@ -2,13 +2,38 @@
 <resources>
     <string name="app_name">Meine App</string>
     <string name="welcome_message">Willkommen bei meiner App!</string>
+
+    <!-- String template examples -->
     <string name="greeting">Hallo, %s!</string>
+    <string name="user_profile">Benutzer: %s, Alter: %d</string>
+    <string name="price_tag">Preis: $%.2f</string>
+    <string name="formatted_message">%1$s hat %2$d neue Nachrichten</string>
+
+    <!-- Plural examples -->
     <plurals name="items">
         <item quantity="one">Ein Element</item>
         <item quantity="other">%d Elemente</item>
     </plurals>
+    <plurals name="notifications">
+        <item quantity="zero">Keine Benachrichtigungen</item>
+        <item quantity="one">%1$s, Sie haben %2$d Benachrichtigung</item>
+        <item quantity="other">%1$s, Sie haben %2$d Benachrichtigungen</item>
+    </plurals>
+
+    <!-- String array examples -->
     <string-array name="colors">
         <item>Rot</item>
         <item>Blau</item>
+        <item>Grün</item>
+        <item>Gelb</item>
+    </string-array>
+    <string-array name="days_of_week">
+        <item>Montag</item>
+        <item>Dienstag</item>
+        <item>Mittwoch</item>
+        <item>Donnerstag</item>
+        <item>Freitag</item>
+        <item>Samstag</item>
+        <item>Sonntag</item>
     </string-array>
 </resources>

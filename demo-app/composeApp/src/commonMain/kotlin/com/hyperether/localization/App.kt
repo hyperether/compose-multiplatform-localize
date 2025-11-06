@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -31,8 +33,13 @@ import com.hyperether.resources.stringResource
 import composemultiplatformlocalize.composeapp.generated.resources.Res
 import composemultiplatformlocalize.composeapp.generated.resources.app_name
 import composemultiplatformlocalize.composeapp.generated.resources.colors
+import composemultiplatformlocalize.composeapp.generated.resources.days_of_week
+import composemultiplatformlocalize.composeapp.generated.resources.formatted_message
 import composemultiplatformlocalize.composeapp.generated.resources.greeting
 import composemultiplatformlocalize.composeapp.generated.resources.items
+import composemultiplatformlocalize.composeapp.generated.resources.notifications
+import composemultiplatformlocalize.composeapp.generated.resources.price_tag
+import composemultiplatformlocalize.composeapp.generated.resources.user_profile
 import composemultiplatformlocalize.composeapp.generated.resources.welcome_message
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -40,7 +47,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Preview
 fun App() {
     MaterialTheme {
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
             var appName by remember { mutableStateOf("") }
             var templateString by remember { mutableStateOf("") }
             var pluralString by remember { mutableStateOf("") }
@@ -55,29 +62,47 @@ fun App() {
                 arrayString.addAll(LocalizedStrings.getStringArray(Res.array.colors))
             }
             Text("Outside of compose examples:", color = Color.Red)
-            Text(appName)
-            Text(templateString)
-            Text(pluralString)
+            Text("App name: $appName")
+            Text("Greeting: $templateString")
+            Text("Plural: $pluralString")
             Row {
+                Text("Colors: ")
                 arrayString.forEach {
-                    Text(it, modifier = Modifier.padding(end = 12.dp))
-
+                    Text(it, modifier = Modifier.padding(end = 8.dp))
                 }
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
 
             Text("Inside compose examples:", color = Color.Red)
-            // String example
+
+            // Simple string example
             Text(stringResource(Res.string.welcome_message))
 
-            // String template example
+            // String template example - single argument
             Text(stringResource(Res.string.greeting, "John"))
 
-            // Plurals example  
+            // String template example - multiple arguments
+            Text(stringResource(Res.string.user_profile, "Alice", 25))
+
+            // String template example - float formatting
+            Text(stringResource(Res.string.price_tag, 19.99))
+
+            // String template example - positional arguments
+            Text(stringResource(Res.string.formatted_message, "Bob", 3))
+
+            // Plurals example - simple
+            Text(pluralStringResource(Res.plurals.items, 1, 1))
             Text(pluralStringResource(Res.plurals.items, 5, 5))
 
-            // Array example
-            Text(stringArrayResource(Res.array.colors)[0])
+            // Plurals example - with name and count
+            Text(pluralStringResource(Res.plurals.notifications, 0, "Emma", 0))
+            Text(pluralStringResource(Res.plurals.notifications, 1, "Emma", 1))
+            Text(pluralStringResource(Res.plurals.notifications, 7, "Emma", 7))
+
+            // Array example - all items
+            Text("All colors: ${stringArrayResource(Res.array.colors).joinToString(", ")}")
 
             Button(onClick = {
                 currentLanguage.value =

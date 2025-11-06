@@ -2,13 +2,38 @@
 <resources>
     <string name="app_name">Moja Aplikacija</string>
     <string name="welcome_message">Dobrodošli u moju aplikaciju!</string>
+
+    <!-- String template examples -->
     <string name="greeting">Zdravo, %s!</string>
+    <string name="user_profile">Korisnik: %s, Godine: %d</string>
+    <string name="price_tag">Cena: $%.2f</string>
+    <string name="formatted_message">%1$s ima %2$d novih poruka</string>
+
+    <!-- Plural examples -->
     <plurals name="items">
         <item quantity="one">Jednu stavku</item>
         <item quantity="other">%d stavki</item>
     </plurals>
+    <plurals name="notifications">
+        <item quantity="zero">Nema obaveštenja</item>
+        <item quantity="one">%1$s, imate %2$d obaveštenje</item>
+        <item quantity="other">%1$s, imate %2$d obaveštenja</item>
+    </plurals>
+
+    <!-- String array examples -->
     <string-array name="colors">
         <item>Crvena</item>
         <item>Plava</item>
+        <item>Zelena</item>
+        <item>Žuta</item>
+    </string-array>
+    <string-array name="days_of_week">
+        <item>Ponedeljak</item>
+        <item>Utorak</item>
+        <item>Sreda</item>
+        <item>Četvrtak</item>
+        <item>Petak</item>
+        <item>Subota</item>
+        <item>Nedelja</item>
     </string-array>
 </resources>
