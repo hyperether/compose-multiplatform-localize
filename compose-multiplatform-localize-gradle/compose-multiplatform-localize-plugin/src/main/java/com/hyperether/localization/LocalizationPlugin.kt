@@ -33,12 +33,15 @@ abstract class GenerateTranslationsTask : DefaultTask() {
     @get:Input
     abstract val resourcesDir: Property<String>
 
+    @get:Input
+    abstract val projectDir: Property<File>
+
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
 
     @TaskAction
     fun generateTranslations() {
-        val resDir = File(project.projectDir, resourcesDir.get())
+        val resDir = File(projectDir.get(), resourcesDir.get())
 
         val locales = mutableMapOf<String, File>()
 
@@ -55,7 +58,7 @@ abstract class GenerateTranslationsTask : DefaultTask() {
             locales[capitalized] = File(valueDir, "strings.xml")
         }
 
-        project.logger.lifecycle("Found locales: ${locales.keys}")
+        logger.lifecycle("Found locales: ${locales.keys}")
 
         val resourceDir = outputDir.get().asFile
         resourceDir.mkdirs()
@@ -66,7 +69,7 @@ abstract class GenerateTranslationsTask : DefaultTask() {
                 val outputFile = File(resourceDir, "Strings$localeName.kt")
                 outputFile.writeText(buildKotlinCode(localeName, resources, outputPackage.get()))
             } else {
-                project.logger.warn("Locale file does not exist: $file")
+                logger.warn("Locale file does not exist: $file")
             }
         }
 
@@ -591,6 +594,7 @@ class LocalizationPlugin : Plugin<Project> {
                     task.outputPackage.set(extension.outputPackage)
                     task.defaultLocaleName.set(extension.defaultLocaleName)
                     task.resourcesDir.set(extension.resourcesDir)
+                    task.projectDir.set(project.projectDir)
 
                     val packagePath = extension.outputPackage.get().replace('.', '/')
                     task.outputDir.set(project.layout.buildDirectory.dir("generated/compose/resourceGenerator/kotlin/commonCustomResClass/$packagePath"))
