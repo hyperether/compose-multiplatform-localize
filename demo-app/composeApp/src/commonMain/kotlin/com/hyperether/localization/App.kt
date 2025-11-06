@@ -33,7 +33,6 @@ import com.hyperether.resources.stringResource
 import composemultiplatformlocalize.composeapp.generated.resources.Res
 import composemultiplatformlocalize.composeapp.generated.resources.app_name
 import composemultiplatformlocalize.composeapp.generated.resources.colors
-import composemultiplatformlocalize.composeapp.generated.resources.days_of_week
 import composemultiplatformlocalize.composeapp.generated.resources.formatted_message
 import composemultiplatformlocalize.composeapp.generated.resources.greeting
 import composemultiplatformlocalize.composeapp.generated.resources.items
@@ -47,7 +46,10 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Preview
 fun App() {
     MaterialTheme {
-        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             var appName by remember { mutableStateOf("") }
             var templateString by remember { mutableStateOf("") }
             var pluralString by remember { mutableStateOf("") }
