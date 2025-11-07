@@ -1,5 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Mon Appli</string>
-    <string name="welcome_message">Bienvenue dans mon application !</string>
+    <string name="welcome_message">Bienvenue dans mon application !</string>
+
+    <!-- String template examples -->
+    <string name="greeting">Bonjour, %s !</string>
+    <string name="user_profile">Utilisateur : %s, Âge : %d</string>
+    <string name="price_tag">Prix : $%.2f</string>
+    <string name="formatted_message">%1$s a %2$d nouveaux messages</string>
+
+    <!-- Plural examples -->
+    <plurals name="items">
+        <item quantity="one">Un élément</item>
+        <item quantity="other">%d éléments</item>
+    </plurals>
+    <plurals name="notifications">
+        <item quantity="zero">Aucune notification</item>
+        <item quantity="one">%1$s, vous avez %2$d notification</item>
+        <item quantity="other">%1$s, vous avez %2$d notifications</item>
+    </plurals>
+
+    <!-- String array examples -->
+    <string-array name="colors">
+        <item>Rouge</item>
+        <item>Bleu</item>
+        <item>Vert</item>
+        <item>Jaune</item>
+    </string-array>
+    <string-array name="days_of_week">
+        <item>Lundi</item>
+        <item>Mardi</item>
+        <item>Mercredi</item>
+        <item>Jeudi</item>
+        <item>Vendredi</item>
+        <item>Samedi</item>
+        <item>Dimanche</item>
+    </string-array>
 </resources>

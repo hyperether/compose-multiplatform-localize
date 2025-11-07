@@ -30,7 +30,7 @@ plugins {
     id("org.jetbrains.compose")
 
     // Add the localization plugin
-    id("com.hyperether.localization") version "1.1.1"
+    id("com.hyperether.localization") version "2.0.0"
 }
 
 
@@ -54,7 +54,7 @@ Structure your localized strings in XML files under:
 
 ```
 src/commonMain/composeResources/
-├── values/              # Default locale (usually English)
+├── values/              # Default locale
 │   └── strings.xml
 ├── values-de/           # German locale
 │   └── strings.xml
@@ -68,6 +68,17 @@ src/commonMain/composeResources/
 <resources>
     <string name="app_name">My App</string>
     <string name="welcome_message">Welcome to my app!</string>
+    <string name="greeting">Hello, %s!</string>
+    <plurals name="items">
+        <item quantity="one">One item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
+    <string-array name="colors">
+        <item>Red</item>
+        <item>Blue</item>
+        <item>Green</item>
+        <item>Yellow</item>
+    </string-array>
 </resources>
 ```
 
@@ -77,18 +88,23 @@ src/commonMain/composeResources/
 <resources>
     <string name="app_name">Meine App</string>
     <string name="welcome_message">Willkommen bei meiner App!</string>
+    <string name="greeting">Hallo, %s!</string>
+    <plurals name="items">
+        <item quantity="one">Ein Element</item>
+        <item quantity="other">%d Elemente</item>
+    </plurals>
+    <string-array name="colors">
+        <item>Rot</item>
+        <item>Blau</item>
+        <item>Grün</item>
+        <item>Gelb</item>
+    </string-array>
 </resources>
 ```
 
 ---
 
 ## Step 4: Using the Generated Classes in Your UI
-
-The plugin will generate:
-
-- `StringsDefault.kt`, `StringsDe.kt`, etc.
-- `AppLocale.kt`
-- `LocalizedStrings.kt` with utility functions
 
 - Be aware to use `com.hyperether.resources.stringResource` function instead of `org.jetbrains.compose.resources.stringResource`  
 - Same function is made for easier transition from regular compose localization to our plugin.
@@ -100,16 +116,63 @@ The plugin will generate:
 @Preview
 fun App() {
     MaterialTheme {
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
             var appName by remember { mutableStateOf("") }
+            var templateString by remember { mutableStateOf("") }
+            var pluralString by remember { mutableStateOf("") }
+            val arrayString = remember { mutableStateListOf<String>() }
+
+            // Outside of compose example
             LaunchedEffect(currentLanguage.value) {
-                appName = stringResourcePlain(Res.string.app_name)
+                appName = LocalizedStrings.get(Res.string.app_name)
+                templateString = LocalizedStrings.getFormatted(Res.string.greeting, "John")
+                pluralString = LocalizedStrings.getPlural(Res.plurals.items, 5, 5)
+                arrayString.clear()
+                arrayString.addAll(LocalizedStrings.getStringArray(Res.array.colors))
             }
-            Text(appName)
+            Text("Outside of compose examples:", color = Color.Red)
+            Text("App name: $appName")
+            Text("Greeting: $templateString")
+            Text("Plural: $pluralString")
+            Row {
+                Text("Colors: ")
+                arrayString.forEach {
+                    Text(it, modifier = Modifier.padding(end = 8.dp))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+
+            Text("Inside compose examples:", color = Color.Red)
+
+            // Simple string example
             Text(stringResource(Res.string.welcome_message))
-            // Change language by setting current language
-            Text(currentLanguage.value.displayName)
-            Text(currentLanguage.value.nativeName)
+
+            // String template example - single argument
+            Text(stringResource(Res.string.greeting, "John"))
+
+            // String template example - multiple arguments
+            Text(stringResource(Res.string.user_profile, "Alice", 25))
+
+            // String template example - float formatting
+            Text(stringResource(Res.string.price_tag, 19.99))
+
+            // String template example - positional arguments
+            Text(stringResource(Res.string.formatted_message, "Bob", 3))
+
+            // Plurals example - simple
+            Text(pluralStringResource(Res.plurals.items, 1, 1))
+            Text(pluralStringResource(Res.plurals.items, 5, 5))
+
+            // Plurals example - with name and count
+            Text(pluralStringResource(Res.plurals.notifications, 0, "Emma", 0))
+            Text(pluralStringResource(Res.plurals.notifications, 1, "Emma", 1))
+            Text(pluralStringResource(Res.plurals.notifications, 7, "Emma", 7))
+
+            // Array example - all items
+            Text("All colors: ${stringArrayResource(Res.array.colors).joinToString(", ")}")
+
             Button(onClick = {
                 currentLanguage.value =
                     if (currentLanguage.value == AppLocale.DEFAULT) AppLocale.DE else AppLocale.DEFAULT
@@ -118,7 +181,7 @@ fun App() {
             }
 
             // List all locales in app
-            Text("All supported locales: ")
+            Text("All supported locales: ", color = Color.Red)
             Row {
                 Column {
                     AppLocale.supportedLocales.forEach {
@@ -134,17 +197,11 @@ fun App() {
 
             }
 
-            Spacer(modifier  = Modifier.height(20.dp))
 
-            // Find locale by code
-            Text("Find by code: ")
-            Text("${AppLocale.findByCode("de")}")
-            Text("${AppLocale.findByCode("ll")}")
-
-            Spacer(modifier  = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Set locale with code
-            Text("Set locale with code: ")
+            Text("Set locale with code: ", color = Color.Red)
             var code by remember { mutableStateOf("") }
             Row {
                 TextField(code, { code = it })
@@ -168,28 +225,16 @@ For non-composable contexts:
 
 ```kotlin
 import org.jetbrains.compose.resources.Res
-import com.hyperether.resources.stringResourcePlain
 
-fun getTitle(): String {
-    return stringResourcePlain(Res.string.app_name)
-}
+LocalizedStrings.get(Res.string.app_name)
+LocalizedStrings.getFormatted(Res.string.greeting, "John")
+LocalizedStrings.getPlural(Res.plurals.items, 5, 5)
+LocalizedStrings.getStringArray(Res.array.colors)
 ```
 
 ---
 
-## Step 6: (Optional) Direct Access to String Maps
-
-```kotlin
-import com.hyperether.resources.StringsDefault
-import com.hyperether.resources.StringsDe
-
-val englishWelcome = StringsDefault.strings["welcome_message"]
-val germanWelcome = StringsDe.strings["welcome_message"]
-```
-
----
-
-## Step 7: Build Your App
+## Step 6: Build Your App
 
 Run your build and the plugin will:
 
