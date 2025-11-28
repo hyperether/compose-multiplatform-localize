@@ -10,35 +10,17 @@ import composemultiplatformlocalize.composeapp.generated.resources.app_name
 import composemultiplatformlocalize.composeapp.generated.resources.welcome_message
 
 fun main(args: Array<String>) {
-    val appName = LocalizedStrings.get(Res.string.app_name)
-    val isHeadless = args.contains("--headless")
-
-    if (isHeadless) {
-        runHeadless(args, appName)
-    } else {
-        application {
-            Window(
-                onCloseRequest = ::exitApplication,
-                title = "ComposeMultiplatformLocalize",
-            ) {
-                App()
-            }
-        }
-    }
+        runHeadless(args)
 }
 
-fun runHeadless(args: Array<String>, appName: String) {
+fun runHeadless(args: Array<String>) {
+    val appName = LocalizedStrings.get(Res.string.app_name)
     println("Running in headless mode with app name: $appName")
     println("Arguments received: ${args.joinToString(", ")}")
 
     val argsMap = parseArguments(args)
 
     when (argsMap["command"]) {
-        "test" -> {
-            println("Running test command")
-            println("Test parameter: ${argsMap["param"]}")
-        }
-
         "locale" -> {
             val langCode = argsMap["lang"]
             if (langCode != null) {
@@ -64,7 +46,6 @@ fun runHeadless(args: Array<String>, appName: String) {
 
         else -> {
             println("Available commands:")
-            println("  --headless --command=test --param=value")
             println("  --headless --command=locale --lang=<code>")
             println("\nAvailable language codes:")
             AppLocale.entries.forEach { locale ->

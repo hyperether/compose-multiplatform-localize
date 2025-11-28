@@ -127,10 +127,34 @@ compose.desktop {
     application {
         mainClass = "com.hyperether.localization.MainKt"
 
+        jvmArgs += listOf(
+            "-Djava.awt.headless=true"
+        )
+
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.hyperether.localization"
             packageVersion = "1.0.0"
         }
+    }
+}
+
+// Custom task to run in headless mode with -Djava.awt.headless=true
+tasks.register<JavaExec>("runHeadless") {
+    group = "application"
+    description = "Run the application in headless mode with -Djava.awt.headless=true"
+
+    classpath = tasks.named<JavaExec>("run").get().classpath
+    mainClass.set("com.hyperether.localization.MainKt")
+
+    // Set the headless JVM argument
+    jvmArgs = listOf("-Djava.awt.headless=true")
+
+    // Default args for headless mode
+    args = listOf("--headless")
+
+    // Allow overriding args from command line
+    if (project.hasProperty("appArgs")) {
+        args = (project.property("appArgs") as String).split(" ")
     }
 }
