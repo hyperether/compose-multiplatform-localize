@@ -328,6 +328,9 @@ abstract class GenerateTranslationsTask : DefaultTask() {
                         .replace("\\", "\\\\")  // Escape backslashes first
                         .replace("$", "\\$")     // Escape dollar signs for Kotlin string interpolation
                         .replace("\"", "\\\"")   // Escape quotes
+                        .replace("\r", "\\r")    // Escape carriage returns
+                        .replace("\n", "\\n")    // Escape newlines
+                        .replace("\t", "\\t")    // Escape tabs
                     // Check if it contains format specifiers and should be treated as formatted
                     val formatArgs = extractFormatArgs(resource.value)
                     if (formatArgs.isNotEmpty()) {
@@ -345,6 +348,9 @@ abstract class GenerateTranslationsTask : DefaultTask() {
                         .replace("\\", "\\\\")  // Escape backslashes first
                         .replace("$", "\\$")     // Escape dollar signs for Kotlin string interpolation
                         .replace("\"", "\\\"")   // Escape quotes
+                        .replace("\r", "\\r")    // Escape carriage returns
+                        .replace("\n", "\\n")    // Escape newlines
+                        .replace("\t", "\\t")    // Escape tabs
                     val escapedArgs = resource.formatArgs.joinToString(", ") { arg ->
                         val escaped = arg.replace("$", "\\$")
                         "\"$escaped\""
@@ -357,6 +363,9 @@ abstract class GenerateTranslationsTask : DefaultTask() {
                             .replace("\\", "\\\\")  // Escape backslashes first
                             .replace("$", "\\$")     // Escape dollar signs for Kotlin string interpolation
                             .replace("\"", "\\\"")   // Escape quotes
+                            .replace("\r", "\\r")    // Escape carriage returns
+                            .replace("\n", "\\n")    // Escape newlines
+                            .replace("\t", "\\t")    // Escape tabs
                         """"$quantity" to "$escapedValue""""
                     }
                     pluralStrings.add("""    "${resource.key}" to mapOf($items)""")
@@ -367,6 +376,9 @@ abstract class GenerateTranslationsTask : DefaultTask() {
                             .replace("\\", "\\\\")  // Escape backslashes first
                             .replace("$", "\\$")     // Escape dollar signs for Kotlin string interpolation
                             .replace("\"", "\\\"")   // Escape quotes
+                            .replace("\r", "\\r")    // Escape carriage returns
+                            .replace("\n", "\\n")    // Escape newlines
+                            .replace("\t", "\\t")    // Escape tabs
                         """"$escapedValue""""
                     }
                     stringArrays.add("""    "${resource.key}" to listOf($items)""")

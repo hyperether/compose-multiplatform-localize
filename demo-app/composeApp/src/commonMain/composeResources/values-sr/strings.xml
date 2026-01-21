@@ -11,11 +11,11 @@
 
     <!-- Plural examples -->
     <plurals name="items">
-        <item quantity="one">Jednu stavku</item>
+        <item quantity="one">Jednu \nstavku</item>
         <item quantity="other">%d stavki</item>
     </plurals>
     <plurals name="notifications">
-        <item quantity="zero">Nema obaveštenja</item>
+        <item quantity="zero">Nema \nobaveštenja</item>
         <item quantity="one">%1$s, imate %2$d obaveštenje</item>
         <item quantity="other">%1$s, imate %2$d obaveštenja</item>
     </plurals>
